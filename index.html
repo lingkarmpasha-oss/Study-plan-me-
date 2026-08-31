@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Plan - Final Version</title>
+    <title>Study Plan - Firebase Cloud</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 550px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
@@ -23,24 +23,23 @@
         .task-info { display: flex; flex-direction: column; gap: 5px; width: 75%; }
         .task-date { font-size: 0.8em; color: #e83e8c; font-weight: bold; }
         .checkbox-custom { transform: scale(1.3); margin-right: 10px; cursor: pointer; }
+        #loading { text-align: center; color: #007bff; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- Login Section -->
     <div id="loginSection">
-        <h2>Study Plan Premium</h2>
+        <h2>Study Plan Online</h2>
         <p style="font-size: 13px; text-align: center; color: #666;">
-            Masuk sebagai <b>admin</b> (Pass: <b>admin123</b>) untuk mengelola semua data.<br>
-            Atau gunakan nama Anda sendiri untuk membuat plan tak terbatas.
+            Data kini tersimpan di Cloud Server Firebase!<br>
+            Admin: <b>admin</b> | Pass: <b>admin123</b>
         </p>
         <input type="text" id="usernameInput" placeholder="Masukkan Username Anda">
-        <input type="password" id="passwordInput" placeholder="Masukkan Password (Bebas untuk user)">
+        <input type="password" id="passwordInput" placeholder="Masukkan Password">
         <button class="btn-primary" onclick="login()">Masuk ke Dashboard</button>
     </div>
 
-    <!-- Dashboard Section -->
     <div id="dashboardSection" class="hidden">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h2 id="welcomeMessage" style="margin: 0; font-size: 1.2rem;">Halo!</h2>
@@ -56,110 +55,161 @@
         </div>
 
         <h3 style="text-align: left; margin-top: 25px;">Daftar Tugas:</h3>
+        <div id="loading" class="hidden">🔄 Memuat data dari server...</div>
         <ul id="planList"></ul>
     </div>
 </div>
 
-<script>
-    let studyPlans = JSON.parse(localStorage.getItem('studyPlansFinal')) || [];
+<!-- Firebase SDK Module -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+  apiKey: "AIzaSyAf6OIJhVgdDtXE-68eF_P9dWnYj0a2gSo",
+  authDomain: "study-plan-4560a.firebaseapp.com",
+  projectId: "study-plan-4560a",
+  storageBucket: "study-plan-4560a.firebasestorage.app",
+  messagingSenderId: "87310568173",
+  appId: "1:87310568173:web:1889cdd2f03767a18d9ae4",
+  measurementId: "G-Y9G8GLX8E4"
+};
+    // ==========================================
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let studyPlans = [];
     let currentUser = null;
     let isAdmin = false;
 
     const loginSection = document.getElementById('loginSection');
     const dashboardSection = document.getElementById('dashboardSection');
     const planList = document.getElementById('planList');
-    const userControls = document.getElementById('userControls');
+    const loadingUI = document.getElementById('loading');
 
-    function login() {
+    // Menghubungkan fungsi ke Window agar bisa dipanggil dari HTML
+    window.login = async function() {
         const user = document.getElementById('usernameInput').value.trim();
         const pass = document.getElementById('passwordInput').value.trim();
         if (!user || !pass) return alert('Silakan isi Username dan Password!');
         
         currentUser = user;
         isAdmin = (user === 'admin' && pass === 'admin123');
+        
         document.getElementById('usernameInput').value = '';
         document.getElementById('passwordInput').value = '';
-        showDashboard();
+        
+        loginSection.classList.add('hidden');
+        dashboardSection.classList.remove('hidden');
+        document.getElementById('welcomeMessage').innerText = isAdmin ? '👑 Panel Admin' : '👋 Hai, ' + currentUser;
+        
+        document.getElementById('userControls').classList.toggle('hidden', isAdmin);
+        
+        await fetchPlans(); // Ambil data dari Firebase saat login
     }
 
-    function logout() {
+    window.logout = function() {
         currentUser = null;
         isAdmin = false;
         loginSection.classList.remove('hidden');
         dashboardSection.classList.add('hidden');
     }
 
-    function showDashboard() {
-        loginSection.classList.add('hidden');
-        dashboardSection.classList.remove('hidden');
-        document.getElementById('welcomeMessage').innerText = isAdmin ? '👑 Panel Admin' : '👋 Hai, ' + currentUser;
+    async function fetchPlans() {
+        loadingUI.classList.remove('hidden');
+        planList.innerHTML = '';
+        studyPlans = [];
         
-        if (isAdmin) {
-            userControls.classList.add('hidden');
-        } else {
-            userControls.classList.remove('hidden');
+        try {
+            let q = isAdmin 
+                ? collection(db, "studyPlans") 
+                : query(collection(db, "studyPlans"), where("user", "==", currentUser));
+                
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                studyPlans.push({ id: doc.id, ...doc.data() });
+            });
+            renderPlans();
+        } catch (error) {
+            console.error("Error mengambil data:", error);
+            alert("Gagal mengambil data dari database.");
+        } finally {
+            loadingUI.classList.add('hidden');
         }
-        renderPlans();
     }
 
-    function addPlan() {
+    window.addPlan = async function() {
         const task = document.getElementById('taskInput').value.trim();
         const date = document.getElementById('dateInput').value;
         if (!task || !date) return alert('Mohon isi materi dan tanggal deadline!');
 
-        // Tidak ada lagi batasan limit versi trial
-        studyPlans.push({ id: Date.now(), user: currentUser, task, date, completed: false });
-        saveData();
-        document.getElementById('taskInput').value = '';
-        document.getElementById('dateInput').value = '';
-        renderPlans();
+        loadingUI.classList.remove('hidden');
+        try {
+            await addDoc(collection(db, "studyPlans"), {
+                user: currentUser,
+                task: task,
+                date: date,
+                completed: false
+            });
+            document.getElementById('taskInput').value = '';
+            document.getElementById('dateInput').value = '';
+            await fetchPlans(); // Refresh data
+        } catch (error) {
+            console.error("Error menambah data:", error);
+        }
     }
 
-    function deletePlan(id) {
+    window.deletePlan = async function(id) {
         if(confirm('Yakin ingin menghapus tugas ini?')) {
-            studyPlans = studyPlans.filter(plan => plan.id !== id);
-            saveData();
-            renderPlans();
+            loadingUI.classList.remove('hidden');
+            try {
+                await deleteDoc(doc(db, "studyPlans", id));
+                await fetchPlans();
+            } catch (error) {
+                console.error("Error menghapus data:", error);
+            }
         }
     }
 
-    function toggleComplete(id) {
-        const plan = studyPlans.find(p => p.id === id);
-        if (plan) {
-            plan.completed = !plan.completed;
-            saveData();
-            renderPlans();
+    window.toggleComplete = async function(id, currentStatus) {
+        try {
+            await updateDoc(doc(db, "studyPlans", id), {
+                completed: !currentStatus
+            });
+            await fetchPlans();
+        } catch (error) {
+            console.error("Error update data:", error);
         }
     }
 
-    function clearCompleted() {
-        if(confirm('Hapus semua tugas yang sudah dicentang selesai?')) {
-            studyPlans = studyPlans.filter(plan => plan.user !== currentUser || !plan.completed);
-            saveData();
-            renderPlans();
+    window.clearCompleted = async function() {
+        if(confirm('Hapus semua tugas yang sudah dicentang selesai di server?')) {
+            loadingUI.classList.remove('hidden');
+            try {
+                const completedPlans = studyPlans.filter(p => p.completed && p.user === currentUser);
+                for (const plan of completedPlans) {
+                    await deleteDoc(doc(db, "studyPlans", plan.id));
+                }
+                await fetchPlans();
+            } catch (error) {
+                console.error("Error bersihkan data:", error);
+            }
         }
-    }
-
-    function saveData() {
-        // Menggunakan key baru agar data tidak bentrok dengan versi trial
-        localStorage.setItem('studyPlansFinal', JSON.stringify(studyPlans));
     }
 
     function renderPlans() {
         planList.innerHTML = '';
-        const filteredPlans = isAdmin ? studyPlans : studyPlans.filter(p => p.user === currentUser);
-        
-        // Urutkan: yang belum selesai di atas, yang selesai di bawah
-        filteredPlans.sort((a, b) => a.completed - b.completed);
+        studyPlans.sort((a, b) => a.completed - b.completed);
 
-        if (filteredPlans.length === 0) {
-            planList.innerHTML = '<li style="justify-content:center; color:#888;">Belum ada tugas. Ayo mulai belajar!</li>';
+        if (studyPlans.length === 0) {
+            planList.innerHTML = '<li style="justify-content:center; color:#888;">Belum ada tugas di database.</li>';
             return;
         }
 
-        filteredPlans.forEach(plan => {
+        studyPlans.forEach(plan => {
             const li = document.createElement('li');
-            if(plan.completed) li.style.borderLeftColor = '#28a745'; // Warna hijau jika selesai
+            if(plan.completed) li.style.borderLeftColor = '#28a745';
             
             const statusClass = plan.completed ? 'completed-task' : '';
             const adminBadge = isAdmin ? `<span class="badge">${plan.user}</span>` : '';
@@ -167,13 +217,13 @@
 
             li.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 10px; width: 75%;">
-                    <input type="checkbox" class="checkbox-custom" ${checked} onchange="toggleComplete(${plan.id})">
+                    <input type="checkbox" class="checkbox-custom" ${checked} onchange="toggleComplete('${plan.id}', ${plan.completed})">
                     <div class="task-info">
                         <span class="${statusClass}" style="font-weight: 500; font-size: 15px;">${adminBadge}${plan.task}</span>
                         <span class="task-date">📅 Deadline: ${plan.date}</span>
                     </div>
                 </div>
-                <button class="btn-danger" onclick="deletePlan(${plan.id})">Hapus</button>
+                <button class="btn-danger" onclick="deletePlan('${plan.id}')">Hapus</button>
             `;
             planList.appendChild(li);
         });
