@@ -3,76 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Plan - Trial Version</title>
+    <title>Study Plan - Final Version</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 500px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        h2, h3 { text-align: center; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 550px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        h2, h3 { text-align: center; color: #333; }
         .hidden { display: none !important; }
-        input[type="text"], input[type="password"], input[type="date"] { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        button:hover { background: #0056b3; }
-        .btn-danger { background: #dc3545; width: auto; padding: 5px 10px; margin: 0; }
-        .btn-logout { background: #6c757d; margin-bottom: 20px; }
+        input[type="text"], input[type="password"], input[type="date"] { width: 100%; padding: 12px; margin: 8px 0 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        .btn-primary { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-danger { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .btn-danger:hover { background: #a71d2a; }
+        .btn-logout { background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; margin-bottom: 20px; }
+        .btn-clear { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 10px; margin-bottom: 20px; font-weight: bold; }
         ul { list-style: none; padding: 0; }
-        li { background: #e9ecef; margin: 8px 0; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
-        .completed { text-decoration: line-through; color: gray; }
-        .badge { background: #28a745; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 10px; }
-        .trial-warning { background: #ffeeba; color: #856404; padding: 10px; border-radius: 5px; text-align: center; font-size: 0.9em; margin-bottom: 15px; }
-        .task-info { display: flex; flex-direction: column; gap: 5px; width: 70%; }
-        .task-date { font-size: 0.8em; color: #d9534f; font-weight: bold; }
+        li { background: #f8f9fa; margin: 10px 0; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #007bff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .completed-task { text-decoration: line-through; color: #a0a0a0; }
+        .badge { background: #17a2b8; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75em; margin-right: 10px; }
+        .task-info { display: flex; flex-direction: column; gap: 5px; width: 75%; }
+        .task-date { font-size: 0.8em; color: #e83e8c; font-weight: bold; }
+        .checkbox-custom { transform: scale(1.3); margin-right: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- Login Section -->
     <div id="loginSection">
-        <h2>Login Study Plan</h2>
-        <p style="font-size: 12px; text-align: center; color: gray;">
-            Admin: <b>admin</b> | Pass: <b>admin123</b> <br>
-            User biasa dibatasi 3 tugas (Versi Trial).
+        <h2>Study Plan Premium</h2>
+        <p style="font-size: 13px; text-align: center; color: #666;">
+            Masuk sebagai <b>admin</b> (Pass: <b>admin123</b>) untuk mengelola semua data.<br>
+            Atau gunakan nama Anda sendiri untuk membuat plan tak terbatas.
         </p>
-        <input type="text" id="usernameInput" placeholder="Username">
-        <input type="password" id="passwordInput" placeholder="Password">
-        <button onclick="login()">Masuk</button>
+        <input type="text" id="usernameInput" placeholder="Masukkan Username Anda">
+        <input type="password" id="passwordInput" placeholder="Masukkan Password (Bebas untuk user)">
+        <button class="btn-primary" onclick="login()">Masuk ke Dashboard</button>
     </div>
 
+    <!-- Dashboard Section -->
     <div id="dashboardSection" class="hidden">
-        <button class="btn-logout" onclick="logout()">Logout</button>
-        <h2 id="welcomeMessage">Selamat Datang!</h2>
-        
-        <div id="trialBanner" class="trial-warning hidden">
-            Anda menggunakan versi Trial. Sisa kuota plan: <span id="quotaCount">3</span>/3
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 id="welcomeMessage" style="margin: 0; font-size: 1.2rem;">Halo!</h2>
+            <button class="btn-logout" onclick="logout()">Logout</button>
         </div>
+        <hr style="border: 1px solid #eee; margin: 20px 0;">
         
         <div id="userControls">
-            <input type="text" id="taskInput" placeholder="Masukkan materi belajar...">
+            <input type="text" id="taskInput" placeholder="Apa yang ingin Anda pelajari?">
             <input type="date" id="dateInput">
-            <button onclick="addPlan()">Tambah ke Study Plan</button>
+            <button class="btn-primary" onclick="addPlan()">+ Tambah Plan Baru</button>
+            <button class="btn-clear" onclick="clearCompleted()">Bersihkan Tugas yang Selesai</button>
         </div>
 
-        <h3>Daftar Study Plan</h3>
+        <h3 style="text-align: left; margin-top: 25px;">Daftar Tugas:</h3>
         <ul id="planList"></ul>
     </div>
 </div>
 
 <script>
-    let studyPlans = JSON.parse(localStorage.getItem('studyPlans')) || [];
+    let studyPlans = JSON.parse(localStorage.getItem('studyPlansFinal')) || [];
     let currentUser = null;
     let isAdmin = false;
-    const MAX_TRIAL_PLANS = 3;
 
     const loginSection = document.getElementById('loginSection');
     const dashboardSection = document.getElementById('dashboardSection');
     const planList = document.getElementById('planList');
     const userControls = document.getElementById('userControls');
-    const trialBanner = document.getElementById('trialBanner');
-    const quotaCount = document.getElementById('quotaCount');
 
     function login() {
         const user = document.getElementById('usernameInput').value.trim();
         const pass = document.getElementById('passwordInput').value.trim();
-        if (!user || !pass) return alert('Isi Username dan Password!');
+        if (!user || !pass) return alert('Silakan isi Username dan Password!');
         
         currentUser = user;
         isAdmin = (user === 'admin' && pass === 'admin123');
@@ -91,14 +92,12 @@
     function showDashboard() {
         loginSection.classList.add('hidden');
         dashboardSection.classList.remove('hidden');
-        document.getElementById('welcomeMessage').innerText = isAdmin ? 'Panel Admin' : 'Study Plan: ' + currentUser;
+        document.getElementById('welcomeMessage').innerText = isAdmin ? '👑 Panel Admin' : '👋 Hai, ' + currentUser;
         
         if (isAdmin) {
             userControls.classList.add('hidden');
-            trialBanner.classList.add('hidden');
         } else {
             userControls.classList.remove('hidden');
-            trialBanner.classList.remove('hidden');
         }
         renderPlans();
     }
@@ -106,14 +105,9 @@
     function addPlan() {
         const task = document.getElementById('taskInput').value.trim();
         const date = document.getElementById('dateInput').value;
-        if (!task || !date) return alert('Isi materi dan tanggal deadline!');
+        if (!task || !date) return alert('Mohon isi materi dan tanggal deadline!');
 
-        const userPlansCount = studyPlans.filter(p => p.user === currentUser).length;
-        if (!isAdmin && userPlansCount >= MAX_TRIAL_PLANS) {
-            alert('Limit Trial Tercapai! Anda hanya bisa membuat 3 plan.');
-            return;
-        }
-
+        // Tidak ada lagi batasan limit versi trial
         studyPlans.push({ id: Date.now(), user: currentUser, task, date, completed: false });
         saveData();
         document.getElementById('taskInput').value = '';
@@ -122,9 +116,11 @@
     }
 
     function deletePlan(id) {
-        studyPlans = studyPlans.filter(plan => plan.id !== id);
-        saveData();
-        renderPlans();
+        if(confirm('Yakin ingin menghapus tugas ini?')) {
+            studyPlans = studyPlans.filter(plan => plan.id !== id);
+            saveData();
+            renderPlans();
+        }
     }
 
     function toggleComplete(id) {
@@ -136,35 +132,45 @@
         }
     }
 
+    function clearCompleted() {
+        if(confirm('Hapus semua tugas yang sudah dicentang selesai?')) {
+            studyPlans = studyPlans.filter(plan => plan.user !== currentUser || !plan.completed);
+            saveData();
+            renderPlans();
+        }
+    }
+
     function saveData() {
-        localStorage.setItem('studyPlans', JSON.stringify(studyPlans));
+        // Menggunakan key baru agar data tidak bentrok dengan versi trial
+        localStorage.setItem('studyPlansFinal', JSON.stringify(studyPlans));
     }
 
     function renderPlans() {
         planList.innerHTML = '';
         const filteredPlans = isAdmin ? studyPlans : studyPlans.filter(p => p.user === currentUser);
         
-        if (!isAdmin) {
-            quotaCount.innerText = MAX_TRIAL_PLANS - filteredPlans.length;
-        }
+        // Urutkan: yang belum selesai di atas, yang selesai di bawah
+        filteredPlans.sort((a, b) => a.completed - b.completed);
 
         if (filteredPlans.length === 0) {
-            planList.innerHTML = '<li>Belum ada data.</li>';
+            planList.innerHTML = '<li style="justify-content:center; color:#888;">Belum ada tugas. Ayo mulai belajar!</li>';
             return;
         }
 
         filteredPlans.forEach(plan => {
             const li = document.createElement('li');
-            const statusClass = plan.completed ? 'completed' : '';
+            if(plan.completed) li.style.borderLeftColor = '#28a745'; // Warna hijau jika selesai
+            
+            const statusClass = plan.completed ? 'completed-task' : '';
             const adminBadge = isAdmin ? `<span class="badge">${plan.user}</span>` : '';
             const checked = plan.completed ? 'checked' : '';
 
             li.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px; width: 70%;">
-                    <input type="checkbox" ${checked} onchange="toggleComplete(${plan.id})">
+                <div style="display: flex; align-items: center; gap: 10px; width: 75%;">
+                    <input type="checkbox" class="checkbox-custom" ${checked} onchange="toggleComplete(${plan.id})">
                     <div class="task-info">
-                        <span class="${statusClass}">${adminBadge}${plan.task}</span>
-                        <span class="task-date">Deadline: ${plan.date}</span>
+                        <span class="${statusClass}" style="font-weight: 500; font-size: 15px;">${adminBadge}${plan.task}</span>
+                        <span class="task-date">📅 Deadline: ${plan.date}</span>
                     </div>
                 </div>
                 <button class="btn-danger" onclick="deletePlan(${plan.id})">Hapus</button>
