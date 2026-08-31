@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Plan App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h2, h3 { text-align: center; }
+        .hidden { display: none !important; }
+        input[type="text"], input[type="password"] {
+            width: 100%; padding: 10px; margin: 10px 0;
+            border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;
+        }
+        button {
+            width: 100%; padding: 10px; background-color: #007bff;
+            color: white; border: none; border-radius: 5px;
+            cursor: pointer; font-weight: bold; margin-top: 10px;
+        }
+        button:hover { background-color: #0056b3; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-danger:hover { background-color: #a71d2a; }
+        .btn-logout { background-color: #6c757d; margin-bottom: 20px; }
+        ul { list-style: none; padding: 0; }
+        li {
+            background: #e9ecef; margin: 8px 0; padding: 12px;
+            border-radius: 5px; display: flex; justify-content: space-between;
+            align-items: center; word-break: break-all;
+        }
+        .delete-btn { width: auto; padding: 5px 10px; margin: 0; }
+        .badge { background: #28a745; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="loginSection">
+        <h2>Login Study Plan</h2>
+        <p style="text-size: 12px; text-align: center; color: gray;">
+            Gunakan username <b>admin</b> & password <b>admin123</b> untuk panel Admin. <br>
+            Selain itu akan masuk sebagai User biasa.
+        </p>
+        <input type="text" id="usernameInput" placeholder="Username">
+        <input type="password" id="passwordInput" placeholder="Password">
+        <button onclick="login()">Masuk</button>
+    </div>
+
+    <div id="dashboardSection" class="hidden">
+        <button class="btn-logout" onclick="logout()">Logout</button>
+        <h2 id="welcomeMessage">Selamat Datang!</h2>
+        
+        <div id="userControls">
+            <input type="text" id="taskInput" placeholder="Masukkan materi/tugas belajar baru...">
+            <button onclick="addPlan()">Tambah ke Study Plan</button>
+        </div>
+
+        <h3>Daftar Study Plan</h3>
+        <ul id="planList"></ul>
+    </div>
+</div>
+
+<script>
+    // Inisialisasi Database Lokal (Menyimpan data di browser)
+    let studyPlans = JSON.parse(localStorage.getItem('studyPlans')) || [];
+    let currentUser = null;
+    let isAdmin = false;
+
+    // Elemen DOM
+    const loginSection = document.getElementById('loginSection');
+    const dashboardSection = document.getElementById('dashboardSection');
+    const welcomeMessage = document.getElementById('welcomeMessage');
+    const planList = document.getElementById('planList');
+    const userControls = document.getElementById('userControls');
+
+    // Fungsi Login
+    function login() {
+        const user = document.getElementById('usernameInput').value.trim();
+        const pass = document.getElementById('passwordInput').value.trim();
+
+        if (user === '' || pass === '') {
+            alert('Username dan Password tidak boleh kosong!');
+            return;
+        }
+
+        currentUser = user;
+        // Cek jika login sebagai admin
+        if (user === 'admin' && pass === 'admin123') {
+            isAdmin = true;
+        } else {
+            isAdmin = false;
+        }
+
+        document.getElementById('usernameInput').value = '';
+        document.getElementById('passwordInput').value = '';
+        
+        showDashboard();
+    }
+
+    // Fungsi Logout
+    function logout() {
+        currentUser = null;
+        isAdmin = false;
+        loginSection.classList.remove('hidden');
+        dashboardSection.classList.add('hidden');
+    }
+
+    // Menampilkan Dashboard
+    function showDashboard() {
+        loginSection.classList.add('hidden');
+        dashboardSection.classList.remove('hidden');
+        
+        if (isAdmin) {
+            welcomeMessage.innerText = 'Panel Admin - Mengelola Semua Data';
+            userControls.classList.add('hidden'); // Admin hanya edit/hapus, tidak menambah plan diri sendiri
+        } else {
+            welcomeMessage.innerText = 'Study Plan: ' + currentUser;
+            userControls.classList.remove('hidden');
+        }
+
+        renderPlans();
+    }
+
+    // Menambah Plan Baru
+    function addPlan() {
+        const task = document.getElementById('taskInput').value.trim();
+        if (task === '') return;
+
+        const newPlan = {
+            id: Date.now(),
+            user: currentUser,
+            task: task
+        };
+
+        studyPlans.push(newPlan);
+        saveData();
+        document.getElementById('taskInput').value = '';
+        renderPlans();
+    }
+
+    // Menghapus Plan
+    function deletePlan(id) {
+        studyPlans = studyPlans.filter(plan => plan.id !== id);
+        saveData();
+        renderPlans();
+    }
+
+    // Menyimpan data ke LocalStorage browser
+    function saveData() {
+        localStorage.setItem('studyPlans', JSON.stringify(studyPlans));
+    }
+
+    // Menampilkan daftar Plan sesuai Role (Admin melihat semua, User melihat miliknya saja)
+    function renderPlans() {
+        planList.innerHTML = '';
+        
+        const filteredPlans = isAdmin 
+            ? studyPlans 
+            : studyPlans.filter(plan => plan.user === currentUser);
+
+        if (filteredPlans.length === 0) {
+            planList.innerHTML = '<li>Belum ada data study plan.</li>';
+            return;
+        }
+
+        filteredPlans.forEach(plan => {
+            const li = document.createElement('li');
+            
+            let textContent = plan.task;
+            // Jika admin yang melihat, tunjukkan nama pemilik tugas
+            if (isAdmin) {
+                textContent = `<span class="badge">${plan.user}</span> ${plan.task}`;
+            }
+
+            li.innerHTML = `
+                <span>${textContent}</span>
+                <button class="btn-danger delete-btn" onclick="deletePlan(${plan.id})">Hapus</button>
+            `;
+            planList.appendChild(li);
+        });
+    }
+</script>
+
+</body>
+</html>
