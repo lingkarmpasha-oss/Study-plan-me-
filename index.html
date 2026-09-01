@@ -3,236 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Plan - Firebase Cloud</title>
+    <title>Study Platform Pro</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 550px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
-        h2, h3 { text-align: center; color: #333; }
-        .hidden { display: none !important; }
-        input[type="text"], input[type="password"], input[type="date"] { width: 100%; padding: 12px; margin: 8px 0 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
-        .btn-primary { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; }
-        .btn-primary:hover { background: #0056b3; }
-        .btn-danger { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
-        .btn-danger:hover { background: #a71d2a; }
-        .btn-logout { background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; margin-bottom: 20px; }
-        .btn-clear { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 10px; margin-bottom: 20px; font-weight: bold; }
-        ul { list-style: none; padding: 0; }
-        li { background: #f8f9fa; margin: 10px 0; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #007bff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .completed-task { text-decoration: line-through; color: #a0a0a0; }
-        .badge { background: #17a2b8; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75em; margin-right: 10px; }
-        .task-info { display: flex; flex-direction: column; gap: 5px; width: 75%; }
-        .task-date { font-size: 0.8em; color: #e83e8c; font-weight: bold; }
-        .checkbox-custom { transform: scale(1.3); margin-right: 10px; cursor: pointer; }
-        #loading { text-align: center; color: #007bff; font-weight: bold; margin-top: 10px; }
+        :root {
+            --primary: #4F46E5;
+            --bg: #F3F4F6;
+            --text: #1F2937;
+            --card-bg: #FFFFFF;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #D1D5DB;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #E5E7EB;
+            padding: 10px;
+            text-align: left;
+        }
+        th { background-color: #F9FAFB; }
+        #app-content { display: none; } /* Hidden until logged in */
+        .auth-container { max-width: 400px; margin: 100px auto; }
+        .ai-chat-box {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #D1D5DB;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #F9FAFB;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="loginSection">
-        <h2>Study Plan Online</h2>
-        <p style="font-size: 13px; text-align: center; color: #666;">
-            Data kini tersimpan di Cloud Server Firebase!<br>
-        </p>
-        <input type="text" id="usernameInput" placeholder="Masukkan Username Anda">
-        <input type="password" id="passwordInput" placeholder="Masukkan Password">
-        <button class="btn-primary" onclick="login()">Masuk ke Dashboard</button>
+    <div id="auth-section" class="card auth-container">
+        <h2>Login ke Study Platform</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login / Daftar</button>
     </div>
 
-    <div id="dashboardSection" class="hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 id="welcomeMessage" style="margin: 0; font-size: 1.2rem;">Halo!</h2>
-            <button class="btn-logout" onclick="logout()">Logout</button>
-        </div>
-        <hr style="border: 1px solid #eee; margin: 20px 0;">
-        
-        <div id="userControls">
-            <input type="text" id="taskInput" placeholder="Apa yang ingin Anda pelajari?">
-            <input type="date" id="dateInput">
-            <button class="btn-primary" onclick="addPlan()">+ Tambah Plan Baru</button>
-            <button class="btn-clear" onclick="clearCompleted()">Bersihkan Tugas yang Selesai</button>
-        </div>
+    <div id="app-content">
+        <header>
+            <h1>📚 Study Platform Pro</h1>
+            <button onclick="logout()" style="width: auto;">Logout</button>
+        </header>
 
-        <h3 style="text-align: left; margin-top: 25px;">Daftar Tugas:</h3>
-        <div id="loading" class="hidden">🔄 Memuat data dari server...</div>
-        <ul id="planList"></ul>
+        <div class="grid">
+            <div class="card">
+                <h2>🗓️ Study Plan & Time Table</h2>
+                <input type="text" id="materi" placeholder="Materi yang dipelajari">
+                <input type="datetime-local" id="tenggat">
+                <input type="url" id="link" placeholder="Link Pembelajaran (Opsional)">
+                <input type="file" id="file-upload">
+                <button onclick="tambahJadwal()">Tambah Jadwal</button>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Materi</th>
+                            <th>Tenggat Waktu</th>
+                            <th>Aksi/Link</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-jadwal">
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="grid-column">
+                <div class="card">
+                    <h2>📝 Catatan (Notes)</h2>
+                    <textarea id="catatan" rows="6" placeholder="Ketik catatan penting Anda di sini..."></textarea>
+                    <button onclick="simpanCatatan()">Simpan Catatan</button>
+                    <p id="notif-catatan" style="color: green; font-size: 12px; display: none;">Tersimpan!</p>
+                </div>
+
+                <div class="card">
+                    <h2>🤖 Asisten Gemini AI</h2>
+                    <div class="ai-chat-box" id="ai-response">
+                        <em>Halo! Saya Gemini. Ada yang bisa saya bantu untuk belajarmu hari ini?</em>
+                    </div>
+                    <input type="text" id="ai-prompt" placeholder="Tanyakan sesuatu tentang materi Anda...">
+                    <button onclick="tanyaGemini()">Tanya AI</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Firebase SDK Module -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
-  const firebaseConfig = {
-  apiKey: "AIzaSyAf6OIJhVgdDtXE-68eF_P9dWnYj0a2gSo",
-  authDomain: "study-plan-4560a.firebaseapp.com",
-  projectId: "study-plan-4560a",
-  storageBucket: "study-plan-4560a.firebasestorage.app",
-  messagingSenderId: "87310568173",
-  appId: "1:87310568173:web:1889cdd2f03767a18d9ae4",
-  measurementId: "G-Y9G8GLX8E4"
-};
-    // ==========================================
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAf6OIJhVgdDtXE-68eF_P9dWnYj0a2gSo",
+      authDomain: "study-plan-4560a.firebaseapp.com",
+      projectId: "study-plan-4560a",
+      storageBucket: "study-plan-4560a.firebasestorage.app",
+      messagingSenderId: "87310568173",
+      appId: "1:87310568173:web:1889cdd2f03767a18d9ae4",
+      measurementId: "G-Y9G8GLX8E4"
+    };
+    
+    // Inisialisasi Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    // 2. KONFIGURASI GEMINI API
+    const GEMINI_API_KEY = "AQ.Ab8RN6LdpgMly2dzPnYk07YtKQ4HJYMxwvs0tGtZfrU4wvspPQ";
 
-    let studyPlans = [];
     let currentUser = null;
-    let isAdmin = false;
 
-    const loginSection = document.getElementById('loginSection');
-    const dashboardSection = document.getElementById('dashboardSection');
-    const planList = document.getElementById('planList');
-    const loadingUI = document.getElementById('loading');
+    // --- AUTENTIKASI ---
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            muatData();
+        } else {
+            document.getElementById('auth-section').style.display = 'block';
+            document.getElementById('app-content').style.display = 'none';
+        }
+    });
 
-    // Menghubungkan fungsi ke Window agar bisa dipanggil dari HTML
-    window.login = async function() {
-        const user = document.getElementById('usernameInput').value.trim();
-        const pass = document.getElementById('passwordInput').value.trim();
-        if (!user || !pass) return alert('Silakan isi Username dan Password!');
-        
-        currentUser = user;
-        isAdmin = (user === 'admin' && pass === 'admin123');
-        
-        document.getElementById('usernameInput').value = '';
-        document.getElementById('passwordInput').value = '';
-        
-        loginSection.classList.add('hidden');
-        dashboardSection.classList.remove('hidden');
-        document.getElementById('welcomeMessage').innerText = isAdmin ? '👑 Panel Admin' : '👋 Hai, ' + currentUser;
-        
-        document.getElementById('userControls').classList.toggle('hidden', isAdmin);
-        
-        await fetchPlans(); // Ambil data dari Firebase saat login
-    }
-
-    window.logout = function() {
-        currentUser = null;
-        isAdmin = false;
-        loginSection.classList.remove('hidden');
-        dashboardSection.classList.add('hidden');
-    }
-
-    async function fetchPlans() {
-        loadingUI.classList.remove('hidden');
-        planList.innerHTML = '';
-        studyPlans = [];
-        
+    async function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
         try {
-            let q = isAdmin 
-                ? collection(db, "studyPlans") 
-                : query(collection(db, "studyPlans"), where("user", "==", currentUser));
+            await auth.signInWithEmailAndPassword(email, password);
+        } catch (error) {
+            // Jika akun belum ada, buat akun baru otomatis (untuk kemudahan)
+            if (error.code === 'auth/user-not-found') {
+                await auth.createUserWithEmailAndPassword(email, password);
+            } else {
+                alert("Error login: " + error.message);
+            }
+        }
+    }
+
+    function logout() {
+        auth.signOut();
+    }
+
+    // --- FITUR JADWAL & UPLOAD FILE ---
+    async function tambahJadwal() {
+        const materi = document.getElementById('materi').value;
+        const tenggat = document.getElementById('tenggat').value;
+        const link = document.getElementById('link').value;
+        const fileInput = document.getElementById('file-upload').files[0];
+        
+        if (!materi || !tenggat) return alert("Materi dan tenggat waktu wajib diisi!");
+
+        let fileUrl = "";
+        if (fileInput) {
+            const storageRef = storage.ref(`files/${currentUser.uid}/${fileInput.name}`);
+            await storageRef.put(fileInput);
+            fileUrl = await storageRef.getDownloadURL();
+        }
+
+        db.collection('jadwal').add({
+            uid: currentUser.uid,
+            materi: materi,
+            tenggat: tenggat,
+            link: link,
+            fileUrl: fileUrl,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        document.getElementById('materi').value = "";
+        document.getElementById('tenggat').value = "";
+        document.getElementById('link').value = "";
+        document.getElementById('file-upload').value = "";
+    }
+
+    function muatData() {
+        // Muat Jadwal
+        db.collection('jadwal').where('uid', '==', currentUser.uid).orderBy('timestamp', 'desc')
+        .onSnapshot(snapshot => {
+            const tabel = document.getElementById('tabel-jadwal');
+            tabel.innerHTML = "";
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const aksi = [];
+                if (data.link) aksi.push(`<a href="${data.link}" target="_blank">Link</a>`);
+                if (data.fileUrl) aksi.push(`<a href="${data.fileUrl}" target="_blank">File</a>`);
                 
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-                studyPlans.push({ id: doc.id, ...doc.data() });
+                tabel.innerHTML += `
+                    <tr>
+                        <td>${data.materi}</td>
+                        <td>${new Date(data.tenggat).toLocaleString('id-ID')}</td>
+                        <td>${aksi.join(' | ') || '-'} <button onclick="hapusJadwal('${doc.id}')" style="padding: 2px 5px; font-size: 12px; margin-top:5px; background:red;">Hapus</button></td>
+                    </tr>
+                `;
             });
-            renderPlans();
-        } catch (error) {
-            console.error("Error mengambil data:", error);
-            alert("Gagal mengambil data dari database.");
-        } finally {
-            loadingUI.classList.add('hidden');
-        }
-    }
+        });
 
-    window.addPlan = async function() {
-        const task = document.getElementById('taskInput').value.trim();
-        const date = document.getElementById('dateInput').value;
-        if (!task || !date) return alert('Mohon isi materi dan tanggal deadline!');
-
-        loadingUI.classList.remove('hidden');
-        try {
-            await addDoc(collection(db, "studyPlans"), {
-                user: currentUser,
-                task: task,
-                date: date,
-                completed: false
-            });
-            document.getElementById('taskInput').value = '';
-            document.getElementById('dateInput').value = '';
-            await fetchPlans(); // Refresh data
-        } catch (error) {
-            console.error("Error menambah data:", error);
-        }
-    }
-
-    window.deletePlan = async function(id) {
-        if(confirm('Yakin ingin menghapus tugas ini?')) {
-            loadingUI.classList.remove('hidden');
-            try {
-                await deleteDoc(doc(db, "studyPlans", id));
-                await fetchPlans();
-            } catch (error) {
-                console.error("Error menghapus data:", error);
+        // Muat Catatan
+        db.collection('catatan').doc(currentUser.uid).get().then(doc => {
+            if (doc.exists) {
+                document.getElementById('catatan').value = doc.data().teks;
             }
-        }
-    }
-
-    window.toggleComplete = async function(id, currentStatus) {
-        try {
-            await updateDoc(doc(db, "studyPlans", id), {
-                completed: !currentStatus
-            });
-            await fetchPlans();
-        } catch (error) {
-            console.error("Error update data:", error);
-        }
-    }
-
-    window.clearCompleted = async function() {
-        if(confirm('Hapus semua tugas yang sudah dicentang selesai di server?')) {
-            loadingUI.classList.remove('hidden');
-            try {
-                const completedPlans = studyPlans.filter(p => p.completed && p.user === currentUser);
-                for (const plan of completedPlans) {
-                    await deleteDoc(doc(db, "studyPlans", plan.id));
-                }
-                await fetchPlans();
-            } catch (error) {
-                console.error("Error bersihkan data:", error);
-            }
-        }
-    }
-
-    function renderPlans() {
-        planList.innerHTML = '';
-        studyPlans.sort((a, b) => a.completed - b.completed);
-
-        if (studyPlans.length === 0) {
-            planList.innerHTML = '<li style="justify-content:center; color:#888;">Belum ada tugas di database.</li>';
-            return;
-        }
-
-        studyPlans.forEach(plan => {
-            const li = document.createElement('li');
-            if(plan.completed) li.style.borderLeftColor = '#28a745';
-            
-            const statusClass = plan.completed ? 'completed-task' : '';
-            const adminBadge = isAdmin ? `<span class="badge">${plan.user}</span>` : '';
-            const checked = plan.completed ? 'checked' : '';
-
-            li.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px; width: 75%;">
-                    <input type="checkbox" class="checkbox-custom" ${checked} onchange="toggleComplete('${plan.id}', ${plan.completed})">
-                    <div class="task-info">
-                        <span class="${statusClass}" style="font-weight: 500; font-size: 15px;">${adminBadge}${plan.task}</span>
-                        <span class="task-date">📅 Deadline: ${plan.date}</span>
-                    </div>
-                </div>
-                <button class="btn-danger" onclick="deletePlan('${plan.id}')">Hapus</button>
-            `;
-            planList.appendChild(li);
         });
     }
-</script>
 
+    function hapusJadwal(id) {
+        db.collection('jadwal').doc(id).delete();
+    }
+
+    // --- FITUR CATATAN ---
+    function simpanCatatan() {
+        const teks = document.getElementById('catatan').value;
+        db.collection('catatan').doc(currentUser.uid).set({ teks: teks })
+        .then(() => {
+            const notif = document.getElementById('notif-catatan');
+            notif.style.display = 'block';
+            setTimeout(() => notif.style.display = 'none', 2000);
+        });
+    }
+
+    // --- INTEGRASI GEMINI AI ---
+    async function tanyaGemini() {
+        const prompt = document.getElementById('ai-prompt').value;
+        if (!prompt) return;
+
+        const responseBox = document.getElementById('ai-response');
+        responseBox.innerHTML += `<p><strong>Anda:</strong> ${prompt}</p>`;
+        document.getElementById('ai-prompt').value = "";
+        responseBox.innerHTML += `<p id="loading-ai"><em>Gemini sedang berpikir...</em></p>`;
+        responseBox.scrollTop = responseBox.scrollHeight;
+
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            
+            const data = await response.json();
+            const aiText = data.candidates[0].content.parts[0].text;
+            
+            document.getElementById('loading-ai').remove();
+            // Simple markdown parser to handle bold and line breaks from Gemini
+            const formattedText = aiText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            responseBox.innerHTML += `<p><strong>Gemini:</strong> ${formattedText}</p>`;
+            responseBox.scrollTop = responseBox.scrollHeight;
+
+        } catch (error) {
+            document.getElementById('loading-ai').remove();
+            responseBox.innerHTML += `<p style="color:red;">Error: Gagal menghubungi AI. Pastikan API Key benar.</p>`;
+        }
+    }
+</script>
 </body>
 </html>
-<nav>
-    <a href="index.html">Beranda</a> | 
-    <a href="tentang.html">menu tambahan</a>
-</nav>
-
